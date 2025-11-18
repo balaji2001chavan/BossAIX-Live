@@ -13,35 +13,82 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r152/three.min.js"></script>
 
   <script>
-    console.log("THREE Loaded:", THREE);
 
+    // ----------------------------------------
+    // 1) Setup Scene + Camera + Renderer
+    // ----------------------------------------
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(
-      60,
+      65,
       window.innerWidth / window.innerHeight,
       0.1,
-      10000
+      20000
     );
-    camera.position.z = 200;
+    camera.position.set(0, 50, 300);
 
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    const geo = new THREE.SphereGeometry(50, 32, 32);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const sphere = new THREE.Mesh(geo, mat);
+    // ----------------------------------------
+    // 2) ADD REAL STARFIELD
+    // ----------------------------------------
+    function addStars() {
+      const starGeo = new THREE.BufferGeometry();
+      const starCount = 8000;
 
-    scene.add(sphere);
+      const positions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount * 3; i++) {
+        positions[i] = (Math.random() - 0.5) * 5000;
+      }
 
-    function animate() {
-      requestAnimationFrame(animate);
-      sphere.rotation.y += 0.01;
-      renderer.render(scene, camera);
+      starGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+      const starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 2
+      });
+
+      const stars = new THREE.Points(starGeo, starMaterial);
+      scene.add(stars);
     }
 
+    addStars();
+
+    // ----------------------------------------
+    // 3) ADD SUN LIGHT
+    // ----------------------------------------
+    const sunlight = new THREE.PointLight(0xffffff, 2, 0);
+    sunlight.position.set(500, 300, 200);
+    scene.add(sunlight);
+
+    // ----------------------------------------
+    // 4) ADD EARTH (HD sphere)
+    // ----------------------------------------
+    const earthGeo = new THREE.SphereGeometry(60, 64, 64);
+    const earthMat = new THREE.MeshStandardMaterial({
+      color: 0x1e90ff,
+      roughness: 0.9,
+      metalness: 0.1
+    });
+    const earth = new THREE.Mesh(earthGeo, earthMat);
+    earth.position.set(0, 0, 0);
+
+    scene.add(earth);
+
+    // ----------------------------------------
+    // 5) ANIMATION LOOP
+    // ----------------------------------------
+    function animate() {
+      requestAnimationFrame(animate);
+
+      earth.rotation.y += 0.002;
+
+      renderer.render(scene, camera);
+    }
     animate();
+
   </script>
 
 </body>
